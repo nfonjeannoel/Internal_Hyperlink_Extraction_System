@@ -1,29 +1,35 @@
 import openpyxl
 
-file_name = "HTRs_-_Price_Links_(2).xlsx"
 
-# Open the Excel file
-workbook = openpyxl.load_workbook(file_name)
+class Workbook:
+    def __init__(self, file_name, out_name_and_ext=None):
+        self.file_name = file_name
+        self.workbook = openpyxl.load_workbook(file_name)
+        self.sheet_names = self.workbook.sheetnames
+        self.output_file_name = out_name_and_ext
 
-# Get a list of all the sheet names in the workbook
-sheet_names = workbook.sheetnames
+    def save(self):
+        output_name = "new_" + self.file_name
+        if self.output_file_name:
+            output_name = self.output_file_name
 
-# Iterate through the sheet names
-for sheet_name in sheet_names:
-    # Select the sheet
-    worksheet = workbook[sheet_name]
-    # Iterate through the rows and cells of the sheet
-    for row in worksheet.rows:
-        for cell in row:
-            # Check if the cell value is a hyperlink
-            if cell.hyperlink:
-                try:
-                    # The cell value is a hyperlink, so extract the URL
-                    url = cell.hyperlink.target
-                    # Replace the hyperlink with the URL
-                    cell.value = url
-                except:
-                    pass
+        self.workbook.save(output_name)
 
-# Save the changes to the Excel file
-workbook.save("new_" + file_name)
+    def replace_links(self):
+        for sheet_name in self.sheet_names:
+            worksheet = self.workbook[sheet_name]
+            for row in worksheet.rows:
+                for cell in row:
+                    if cell.hyperlink:
+                        try:
+                            url = cell.hyperlink.target
+                            cell.value = url
+                        except:
+                            pass
+
+        self.save()
+
+
+if __name__ == "__main__":
+    wb = Workbook("HTRs_-_Price_Links_(2).xlsx")
+    wb.replace_links()
